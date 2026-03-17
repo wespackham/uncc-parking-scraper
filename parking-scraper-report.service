@@ -6,4 +6,4 @@ Type=oneshot
 User=ubuntu
 WorkingDirectory=/home/ubuntu/uncc-parking-scraper
 EnvironmentFile=/home/ubuntu/uncc-parking-scraper/.env
-ExecStart=/home/ubuntu/uncc-parking-scraper/.venv/bin/python -m src.daily_report
+ExecStart=/home/ubuntu/uncc-parking-scraper/venv/bin/python -m src.daily_report

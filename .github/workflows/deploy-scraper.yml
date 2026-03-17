@@ -25,7 +25,7 @@ jobs:
           script: |
             cd ~/uncc-parking-scraper
             git pull origin main
-            .venv/bin/pip install -r requirements.txt --quiet
+            venv/bin/pip install -r requirements.txt --quiet
             sudo cp parking-scraper.service /etc/systemd/system/
             sudo cp parking-scraper.timer /etc/systemd/system/
             sudo cp parking-scraper-report.service /etc/systemd/system/
