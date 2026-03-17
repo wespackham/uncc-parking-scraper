@@ -1,0 +1,9 @@
+[Unit]
+Description=UNCC Parking Scraper Daily Report
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/parking-dashboard
+EnvironmentFile=/home/ubuntu/parking-dashboard/.env
+ExecStart=/home/ubuntu/parking-dashboard/.venv/bin/python -m src.daily_report

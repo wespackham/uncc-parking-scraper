@@ -1,0 +1,9 @@
+[Unit]
+Description=Send daily parking scraper report at 10 PM
+
+[Timer]
+OnCalendar=*-*-* 22:00:00
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

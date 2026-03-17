@@ -91,19 +91,23 @@ def test_no_insert_when_snapshot_empty(mock_get, mock_supabase):
     mock_supabase.table.assert_not_called()
 
 
+@patch("src.scraper.send_discord")
 @patch("src.scraper.supabase")
 @patch("src.scraper.requests.get")
-def test_handles_network_error(mock_get, mock_supabase):
+def test_handles_network_error(mock_get, mock_supabase, mock_discord):
     mock_get.side_effect = requests.RequestException("Connection refused")
 
     scrape_and_store()  # should not raise
 
     mock_supabase.table.assert_not_called()
+    mock_discord.assert_called_once()
+    assert "network error" in mock_discord.call_args[0][0]
 
 
+@patch("src.scraper.send_discord")
 @patch("src.scraper.supabase")
 @patch("src.scraper.requests.get")
-def test_handles_malformed_json(mock_get, mock_supabase):
+def test_handles_malformed_json(mock_get, mock_supabase, mock_discord):
     mock_get.return_value = _make_response([
         "data: {not valid json",
     ])
@@ -111,6 +115,8 @@ def test_handles_malformed_json(mock_get, mock_supabase):
     scrape_and_store()  # should not raise
 
     mock_supabase.table.assert_not_called()
+    mock_discord.assert_called_once()
+    assert "JSON" in mock_discord.call_args[0][0]
 
 
 @patch("src.scraper.supabase")

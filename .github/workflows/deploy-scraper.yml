@@ -9,6 +9,8 @@ on:
       - 'requirements.txt'
       - 'parking-scraper.service'
       - 'parking-scraper.timer'
+      - 'parking-scraper-report.service'
+      - 'parking-scraper-report.timer'
 
 jobs:
   deploy:
@@ -26,5 +28,8 @@ jobs:
             .venv/bin/pip install -r requirements.txt --quiet
             sudo cp parking-scraper.service /etc/systemd/system/
             sudo cp parking-scraper.timer /etc/systemd/system/
+            sudo cp parking-scraper-report.service /etc/systemd/system/
+            sudo cp parking-scraper-report.timer /etc/systemd/system/
             sudo systemctl daemon-reload
             sudo systemctl restart parking-scraper.timer
+            sudo systemctl restart parking-scraper-report.timer

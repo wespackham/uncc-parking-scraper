@@ -2,6 +2,7 @@ import requests
 import json
 from src.supabase_client import supabase
 from src.config import SUPABASE_TABLE, URL
+from src.notifier import send_discord
 
 def scrape_and_store():
     try:
@@ -35,10 +36,16 @@ def scrape_and_store():
                 return
 
     except requests.RequestException as e:
-        print(f"Network error while scraping: {e}")
+        msg = f"Scraper error: network error — {e}"
+        print(msg)
+        send_discord(f"⚠️ {msg}")
 
     except json.JSONDecodeError as e:
-        print(f"JSON decode error: {e}")
+        msg = f"Scraper error: JSON decode failed — {e}"
+        print(msg)
+        send_discord(f"⚠️ {msg}")
 
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        msg = f"Scraper error: unexpected error — {e}"
+        print(msg)
+        send_discord(f"⚠️ {msg}")
