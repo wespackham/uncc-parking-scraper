@@ -49,3 +49,5 @@ def scrape_and_store():
         msg = f"Scraper error: unexpected error — {e}"
         print(msg)
         send_discord(f"⚠️ {msg}")
+
+#comment to test ci/cd
