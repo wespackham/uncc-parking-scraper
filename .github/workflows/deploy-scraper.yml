@@ -23,7 +23,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd ~/parking-dashboard
+            cd ~/uncc-parking-scraper
             git pull origin main
             .venv/bin/pip install -r requirements.txt --quiet
             sudo cp parking-scraper.service /etc/systemd/system/
