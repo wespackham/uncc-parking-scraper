@@ -1,0 +1,9 @@
+[Unit]
+Description=UNCC Parking Scraper
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/parking-dashboard
+EnvironmentFile=/home/ubuntu/parking-dashboard/.env
+ExecStart=/home/ubuntu/parking-dashboard/.venv/bin/python main.py

@@ -1,0 +1,30 @@
+name: Deploy scraper to EC2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'main.py'
+      - 'requirements.txt'
+      - 'parking-scraper.service'
+      - 'parking-scraper.timer'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            cd ~/parking-dashboard
+            git pull origin main
+            .venv/bin/pip install -r requirements.txt --quiet
+            sudo cp parking-scraper.service /etc/systemd/system/
+            sudo cp parking-scraper.timer /etc/systemd/system/
+            sudo systemctl daemon-reload
+            sudo systemctl restart parking-scraper.timer
