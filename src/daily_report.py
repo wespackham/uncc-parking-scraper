@@ -3,7 +3,7 @@ from src.supabase_client import supabase
 from src.config import SUPABASE_TABLE
 from src.notifier import send_discord
 
-EXPECTED_SNAPSHOTS = 96  # 24 hours × 4 per hour (every 15 min)
+EXPECTED_SNAPSHOTS = 288  # 24 hours × 12 per hour (every 5 min)
 
 
 def send_daily_report():
