@@ -2,6 +2,7 @@ from unittest.mock import patch, MagicMock
 from src.notifier import send_discord
 
 
+@patch("src.notifier.DISCORD_LABEL", "")
 @patch("src.notifier.requests.post")
 def test_sends_message(mock_post):
     send_discord("hello")
@@ -14,3 +15,10 @@ def test_sends_message(mock_post):
 def test_silences_exceptions(mock_post):
     mock_post.side_effect = Exception("network down")
     send_discord("hello")  # should not raise
+
+
+@patch("src.notifier.DISCORD_LABEL", "droplet")
+@patch("src.notifier.requests.post")
+def test_prefixes_label_when_set(mock_post):
+    send_discord("hello")
+    assert mock_post.call_args[1]["json"] == {"content": "**[droplet]** hello"}

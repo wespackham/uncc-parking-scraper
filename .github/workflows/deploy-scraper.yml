@@ -1,9 +1,10 @@
-name: Deploy scraper to EC2
+name: Deploy scraper to droplet
 
 on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/**'
       - 'src/**'
       - 'main.py'
       - 'requirements.txt'
@@ -16,20 +17,19 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to EC2
+      - name: Deploy to droplet
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_KEY }}
           script: |
-            cd ~/uncc-parking-scraper
-            git pull origin main
-            venv/bin/pip install -r requirements.txt --quiet
-            sudo cp parking-scraper.service /etc/systemd/system/
-            sudo cp parking-scraper.timer /etc/systemd/system/
-            sudo cp parking-scraper-report.service /etc/systemd/system/
-            sudo cp parking-scraper-report.timer /etc/systemd/system/
-            sudo systemctl daemon-reload
-            sudo systemctl restart parking-scraper.timer
-            sudo systemctl restart parking-scraper-report.timer
+            set -e
+            cd /home/ubuntu/uncc-parking-scraper
+            sudo -u ubuntu -H git fetch origin main
+            sudo -u ubuntu -H git reset --hard origin/main
+            sudo -u ubuntu -H venv/bin/pip install -r requirements.txt --quiet
+            cp parking-scraper.service parking-scraper.timer parking-scraper-report.service parking-scraper-report.timer /etc/systemd/system/
+            systemctl daemon-reload
+            systemctl enable parking-scraper.timer parking-scraper-report.timer
+            systemctl restart parking-scraper.timer parking-scraper-report.timer

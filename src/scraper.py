@@ -61,7 +61,9 @@ def _buffer_snapshot(snapshot: dict, created_at: str | None = None) -> dict:
 
 
 def _insert_record(record: dict) -> None:
-    supabase.table(SUPABASE_TABLE).insert(record).execute()
+    # Insert-or-skip on created_at (uq_snap_created) so a replay of a snapshot
+    # whose insert succeeded but whose response was lost is a no-op.
+    supabase.table(SUPABASE_TABLE).upsert(record, on_conflict="created_at", ignore_duplicates=True).execute()
 
 
 def flush_buffered_snapshots(max_records: int = MAX_BUFFER_FLUSH) -> tuple[int, int]:

@@ -45,12 +45,13 @@ def test_parses_buffers_and_inserts_snapshot(mock_get, mock_supabase, buffer_fil
     ])
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
 
     scrape_and_store()
 
     mock_supabase.table.assert_called_with("parking_data")
-    inserted = mock_table.insert.call_args[0][0]
+    inserted = mock_table.upsert.call_args[0][0]
+    assert mock_table.upsert.call_args[1] == {"on_conflict": "created_at", "ignore_duplicates": True}
     assert inserted["data"] == {"A": 0.75, "B": 0.30}
     assert "created_at" in inserted
     mock_table.execute.assert_called_once()
@@ -67,11 +68,11 @@ def test_skips_empty_and_non_data_lines(mock_get, mock_supabase, buffer_file):
     ])
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
 
     scrape_and_store()
 
-    mock_table.insert.assert_called_once()
+    mock_table.upsert.assert_called_once()
     assert _read_jsonl(buffer_file) == []
 
 
@@ -89,11 +90,11 @@ def test_skips_lots_missing_fields(mock_get, mock_supabase, buffer_file):
     ])
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
 
     scrape_and_store()
 
-    inserted = mock_table.insert.call_args[0][0]
+    inserted = mock_table.upsert.call_args[0][0]
     assert inserted["data"] == {"A": 0.5}
     assert _read_jsonl(buffer_file) == []
 
@@ -153,12 +154,12 @@ def test_only_processes_first_data_line(mock_get, mock_supabase, buffer_file):
     ])
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
 
     scrape_and_store()
 
-    mock_table.insert.assert_called_once()
-    inserted = mock_table.insert.call_args[0][0]
+    mock_table.upsert.assert_called_once()
+    inserted = mock_table.upsert.call_args[0][0]
     assert inserted["data"] == {"A": 0.5}
     assert _read_jsonl(buffer_file) == []
 
@@ -172,7 +173,7 @@ def test_failed_insert_stays_buffered_for_retry(mock_get, mock_supabase, mock_di
     ])
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
     mock_table.execute.side_effect = RuntimeError("401 unauthorized")
 
     scrape_and_store()
@@ -192,13 +193,13 @@ def test_flush_replays_buffered_snapshots_in_order(mock_supabase, buffer_file):
 
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
 
     inserted, remaining = flush_buffered_snapshots()
 
     assert inserted == 2
     assert remaining == 0
-    assert [call.args[0] for call in mock_table.insert.call_args_list] == [older, newer]
+    assert [call.args[0] for call in mock_table.upsert.call_args_list] == [older, newer]
     assert _read_jsonl(buffer_file) == []
 
 
@@ -213,11 +214,11 @@ def test_next_successful_run_flushes_buffer_then_current(mock_get, mock_supabase
 
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
 
     scrape_and_store()
 
-    inserted_records = [call.args[0] for call in mock_table.insert.call_args_list]
+    inserted_records = [call.args[0] for call in mock_table.upsert.call_args_list]
     assert inserted_records[0] == older
     assert inserted_records[1]["data"] == {"A": 0.75, "B": 0.30}
     assert inserted_records[1]["created_at"] != older["created_at"]
@@ -233,7 +234,7 @@ def test_flush_keeps_remaining_records_after_failure(mock_supabase, mock_discord
 
     mock_table = MagicMock()
     mock_supabase.table.return_value = mock_table
-    mock_table.insert.return_value = mock_table
+    mock_table.upsert.return_value = mock_table
     mock_table.execute.side_effect = [None, RuntimeError("insert failed")]
 
     inserted, remaining = flush_buffered_snapshots()

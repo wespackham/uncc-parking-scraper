@@ -8,6 +8,8 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 
 DISCORD_WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
+# Optional prefix so messages from different hosts can be told apart, e.g. "droplet".
+DISCORD_LABEL = os.environ.get("DISCORD_LABEL", "")
 
 SUPABASE_TABLE = "parking_data"
 URL = "https://parkingavailability.charlotte.edu/decks/stream"
