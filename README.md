@@ -1,6 +1,12 @@
 # UNCC Parking Scraper
 
-Scrapes the UNC Charlotte parking availability feed, stores snapshots in Supabase, and sends Discord alerts on failures.
+Scrapes the UNC Charlotte parking availability feed every 5 minutes, stores snapshots in the `parking_data` table (PostgreSQL on the project's DigitalOcean droplet, via PostgREST at `https://parking.abrupt.app` — env vars keep the `SUPABASE_*` names), and sends Discord alerts on failures.
+
+## Deploy
+
+Push to `main`: `.github/workflows/deploy-scraper.yml` resets the droplet checkout to `origin/main`, installs requirements and restarts `parking-scraper.timer` (every 5 min) and `parking-scraper-report.timer` (22:00 UTC).
+
+`.env`: `SUPABASE_URL`, `SUPABASE_KEY` (service JWT), `DISCORD_WEBHOOK_URL`, optional `DISCORD_LABEL` (prefix on Discord messages, `droplet` in production).
 
 ## Run Locally
 
@@ -12,7 +18,7 @@ python main.py
 
 ## Buffering And Retry
 
-The scraper now writes each snapshot to local JSONL before attempting any Supabase insert.
+The scraper writes each snapshot to local JSONL before attempting the database insert.
 
 - buffered snapshots live at `logs/pending_snapshots.jsonl`
 - inserts are replayed in order on every run
@@ -20,7 +26,7 @@ The scraper now writes each snapshot to local JSONL before attempting any Supaba
 - unflushed rows remain on disk for the next run
 - Discord alerts fire if buffered replay fails
 
-This prevents transient Supabase auth or network failures from dropping live parking snapshots.
+Inserts are idempotent upserts on `created_at` (unique index `uq_snap_created`), so a replay can never create duplicates. This prevents transient auth or network failures from dropping live parking snapshots.
 
 ## Manual Replay
 
